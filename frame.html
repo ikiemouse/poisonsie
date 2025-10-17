@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit & Save - PINKPON CAM 💗</title>
+  <link rel="icon" href="flower.png" type="image/png">
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --pink: #ff4f8b;
+      --pink-light: #ffb5d1;
+      --bg1: #ffe6f2;
+      --bg2: #fff0f8;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, var(--bg1), var(--bg2));
+      color: var(--pink);
+      text-align: center;
+      padding: 20px;
+    }
+
+    h1 {
+      font-family: 'Baloo 2', cursive;
+      font-size: clamp(1.8rem, 6vw, 2.5rem);
+      margin-bottom: 10px;
+      text-shadow: 0 2px 8px #ffc8e3;
+    }
+
+    #photoGrid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+      margin: 20px auto;
+      max-width: 800px;
+    }
+
+    .photo {
+      border: 4px solid white;
+      border-radius: 15px;
+      box-shadow: 0 4px 16px rgba(255, 79, 139, 0.2);
+      max-width: 160px;
+      height: auto;
+      transition: transform 0.3s ease;
+    }
+
+    .photo:hover {
+      transform: scale(1.05);
+    }
+
+    #effectButtons {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 10px 0 25px;
+    }
+
+    .effect-btn {
+      border: 2px solid var(--pink-light);
+      background: white;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 0.9rem;
+      color: var(--pink);
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .effect-btn.active {
+      background: linear-gradient(90deg, #ff4f8b, #ff95c5);
+      color: white;
+      border-color: #ff4f8b;
+      box-shadow: 0 2px 8px #ff8db877;
+    }
+
+    #controls {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    button {
+      padding: 12px 22px;
+      border-radius: 10px;
+      border: none;
+      background: linear-gradient(90deg, #ff4f8b, #ff95c5);
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 3px 10px #ff4f8b22;
+      transition: 0.3s;
+      font-size: clamp(0.9rem, 3vw, 1rem);
+    }
+
+    button:hover {
+      transform: scale(1.05);
+    }
+
+    footer {
+      margin-top: 20px;
+      color: #ff8db8;
+      font-size: 0.85rem;
+      opacity: 0.7;
+    }
+
+    @media (max-width: 600px) {
+      .photo {
+        max-width: 120px;
+      }
+      #photoGrid {
+        gap: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Edit & Save 💖</h1>
+  <p>Pilih efek favoritmu, lalu simpan hasilnya!</p>
+
+  <div id="effectButtons">
+    <button class="effect-btn active" data-effect="none">✨ Normal</button>
+    <button class="effect-btn" data-effect="grayscale(100%)">🖤 B&W</button>
+    <button class="effect-btn" data-effect="sepia(60%)">🌻 Vintage</button>
+    <button class="effect-btn" data-effect="brightness(120%) saturate(120%)">☀️ Bright</button>
+    <button class="effect-btn" data-effect="hue-rotate(200deg)">💙 Cool</button>
+    <button class="effect-btn" data-effect="blur(1px) brightness(110%)">🌈 Dreamy</button>
+    <button class="effect-btn" data-effect="hue-rotate(-20deg) saturate(130%)">🌸 Soft Pink</button>
+  </div>
+
+  <div id="photoGrid"></div>
+
+  <div id="controls">
+    <button id="savePNG">💾 Simpan PNG</button>
+    <button id="savePDF">📄 Simpan PDF</button>
+    <button id="printPhoto">🖨️ Print</button>
+    <button id="sharePhoto">📤 Share</button>
+    <button id="backToCamera">⬅️ Kembali ke Kamera</button>
+  </div>
+
+  <footer>© 2025 PINKPON Project by Aisyah 🌷</footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script>
+    const photoGrid = document.getElementById('photoGrid');
+    const effectButtons = document.querySelectorAll('.effect-btn');
+    const savePNG = document.getElementById('savePNG');
+    const savePDF = document.getElementById('savePDF');
+    const printPhoto = document.getElementById('printPhoto');
+    const sharePhoto = document.getElementById('sharePhoto');
+    const backToCamera = document.getElementById('backToCamera');
+
+    const photos = JSON.parse(localStorage.getItem("capturedPhotos")) || [];
+    let currentEffect = "none";
+
+    // tampilkan foto hasil jepretan
+    photos.forEach(src => {
+      const img = document.createElement("img");
+      img.src = src;
+      img.className = "photo";
+      img.style.filter = currentEffect;
+      photoGrid.appendChild(img);
+    });
+
+    // ubah efek foto
+    effectButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        effectButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentEffect = btn.dataset.effect;
+        document.querySelectorAll('.photo').forEach(img => {
+          img.style.filter = currentEffect;
+        });
+      });
+    });
+
+    // simpan sebagai PNG
+    savePNG.onclick = () => {
+      photoGrid.querySelectorAll("img").forEach((img, index) => {
+        const link = document.createElement("a");
+        link.href = img.src;
+        link.download = `PINKPON_Photo_${index + 1}.png`;
+        link.click();
+      });
+    };
+
+    // simpan sebagai PDF
+    savePDF.onclick = async () => {
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF();
+      const images = photoGrid.querySelectorAll("img");
+      let y = 10;
+      for (const img of images) {
+        const w = 180;
+        const h = (img.naturalHeight / img.naturalWidth) * w;
+        pdf.addImage(img.src, "PNG", 15, y, w, h);
+        y += h + 10;
+        if (y > 270) { pdf.addPage(); y = 10; }
+      }
+      pdf.save("PINKPON_CAM_Photos.pdf");
+    };
+
+    // print foto
+    printPhoto.onclick = () => {
+      const w = window.open('', '', 'width=800,height=600');
+      w.document.write('<html><head><title>Print PINKPON Photos</title></head><body style="text-align:center;">');
+      photoGrid.querySelectorAll("img").forEach(img => {
+        w.document.write(`<img src="${img.src}" style="max-width:200px;margin:10px;border-radius:10px;">`);
+      });
+      w.document.write('</body></html>');
+      w.document.close();
+      w.print();
+    };
+
+    // share ke sosial media
+    sharePhoto.onclick = async () => {
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: "PINKPON CAM 💗",
+            text: "Lihat hasil foto lucuku di PINKPON CAM!",
+            url: window.location.href
+          });
+        } catch (err) {
+          alert("Gagal share: " + err);
+        }
+      } else {
+        alert("Browser kamu belum mendukung fitur share otomatis 😔");
+      }
+    };
+
+    // balik ke kamera
+    backToCamera.onclick = () => {
+      window.location.href = "index.html";
+    };
+  </script>
+</body>
+</html>
